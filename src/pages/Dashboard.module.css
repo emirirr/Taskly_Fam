@@ -1,0 +1,41 @@
+/* Dashboard.module.css */
+.container {
+    padding: 2rem;
+    background: linear-gradient(135deg, #f9f5ff, #f0e5ff);
+    min-height: 100vh;
+  }
+  
+  .header {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #8b5cf6;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  .card {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  
+  .cardTitle {
+    font-size: 1.25rem;
+    color: #6366f1;
+    margin-bottom: 0.5rem;
+  }
+  
+  .cardValue {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #4f46e5;
+  }
+  
