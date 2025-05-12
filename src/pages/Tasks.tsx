@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { auth, db } from '../core/firebase';
+import React, { useState, useEffect } from 'react'
+import { auth, db } from '../core/firebase'
 import {
   collection,
   addDoc,
@@ -7,71 +7,108 @@ import {
   where,
   onSnapshot,
   deleteDoc,
-  doc
-} from 'firebase/firestore';
-import styles from './Tasks.module.css';
+  doc,
+  getDoc,
+  serverTimestamp
+} from 'firebase/firestore'
+import styles from './Tasks.module.css'
 
 interface Task {
-  id: string;
-  title: string;
-  assignedTo: string;
+  id: string
+  title: string
+  assignedTo: string
+  createdBy: string
+  status: string
+}
+
+interface Member {
+  uid: string
+  displayName: string
 }
 
 const Tasks: React.FC = () => {
-  const [title, setTitle] = useState('');
-  const [assignedTo, setAssignedTo] = useState('');
-  const [members, setMembers] = useState<{ uid: string; displayName: string }[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [title, setTitle] = useState('')
+  const [assignedTo, setAssignedTo] = useState('')
+  const [members, setMembers] = useState<Member[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
 
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) return;
+    const load = async () => {
+      const user = auth.currentUser
+      if (!user) return
+      const userSnap = await getDoc(doc(db, 'users', user.uid))
+      const familyId = userSnap.data()?.familyId
+      if (!familyId) return
 
-    // Üyeleri getir
-    const userRef = doc(db, 'users', user.uid);
-    const unsubUser = onSnapshot(userRef, snap => {
-      const data = snap.data();
-      if (!data) return;
-      const familyId = data.familyId;
-      // Family üyeleri
-      onSnapshot(
-        collection(db, 'users'),
-        qSnap => {
-          const all = qSnap.docs
-            .map(d => ({ uid: d.id, ...(d.data() as any) }))
-            .filter(u => u.familyId === familyId);
-          setMembers(all);
-        }
-      );
-      // Görevleri getir
-      const tasksQ = query(collection(db, 'tasks'), where('familyId', '==', familyId));
-      onSnapshot(tasksQ, snapTasks => {
-        setTasks(snapTasks.docs.map(d => ({ id: d.id, ...(d.data() as any) } as Task)));
-      });
-    });
+      // Aile üyelerini dinle
+      onSnapshot(collection(db, 'users'), snap => {
+        const all = snap.docs
+          .map(d => ({ uid: d.id, ...(d.data() as any) }))
+          .filter(u => u.familyId === familyId)
+        setMembers(all)
+      })
 
-    return () => unsubUser();
-  }, []);
+      // Görevleri dinle
+      const tasksQ = query(collection(db, 'tasks'), where('familyId', '==', familyId))
+      onSnapshot(tasksQ, snap => {
+        setTasks(
+          snap.docs.map(d => ({
+            id: d.id,
+            ...(d.data() as any)
+          })) as Task[]
+        )
+      })
+    }
+    load()
+  }, [])
 
-  const handleAdd = async () => {
-    if (!title || !assignedTo) return;
-    const user = auth.currentUser;
-    if (!user) return;
-    // FamilyId user datası içinden
-    const userSnap = doc(db, 'users', user.uid);
-    const familyId = (await userSnap.get()).data()?.familyId;
-    await addDoc(collection(db, 'tasks'), { title, assignedTo, familyId });
-    setTitle(''); setAssignedTo('');
-  };
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('handleAdd çalıştı — title:', title, 'assignedTo:', assignedTo)
+
+    if (!title.trim()) {
+      alert('Lütfen önce görev başlığı gir.')
+      return
+    }
+    if (!assignedTo) {
+      alert('Lütfen görev atayacağın üyeyi seç.')
+      return
+    }
+
+    try {
+      const user = auth.currentUser!
+      console.log('currentUser.uid:', user.uid)
+      const userSnap = await getDoc(doc(db, 'users', user.uid))
+      const familyId = userSnap.data()?.familyId
+      console.log('familyId:', familyId)
+      if (!familyId) throw new Error('FamilyId bulunamadı.')
+
+      const docRef = await addDoc(collection(db, 'tasks'), {
+        title: title.trim(),
+        assignedTo,
+        familyId,
+        createdBy: user.uid,
+        status: 'pending',
+        createdAt: serverTimestamp()
+      })
+      console.log('Yeni görev eklendi, id:', docRef.id)
+
+      setTitle('')
+      setAssignedTo('')
+    } catch (err: any) {
+      console.error('Görev eklenirken hata:', err)
+      alert('Görev eklenirken bir hata oluştu: ' + err.message)
+    }
+  }
 
   const handleDelete = async (id: string) => {
-    await deleteDoc(doc(db, 'tasks', id));
-  };
+    await deleteDoc(doc(db, 'tasks', id))
+  }
 
   return (
     <div className={styles.container}>
       <h1 className={styles.header}>✅ Görevler</h1>
-      <div className={styles.form}>
+      <form onSubmit={handleAdd} className={styles.form}>
         <div className={styles.inputField}>
           <input
             type="text"
@@ -81,18 +118,20 @@ const Tasks: React.FC = () => {
           />
         </div>
         <div className={styles.inputField}>
-          <select
-            value={assignedTo}
-            onChange={e => setAssignedTo(e.target.value)}
-          >
+          <select value={assignedTo} onChange={e => setAssignedTo(e.target.value)}>
             <option value="">Kime atansın?</option>
             {members.map(m => (
-              <option key={m.uid} value={m.uid}>{m.displayName}</option>
+              <option key={m.uid} value={m.uid}>
+                {m.displayName}
+              </option>
             ))}
           </select>
         </div>
-        <button onClick={handleAdd} className={styles.button}>Ekle</button>
-      </div>
+        <button type="submit" className={styles.button}>
+          Ekle
+        </button>
+      </form>
+
       <div className={styles.list}>
         {tasks.map(t => (
           <div key={t.id} className={styles.card}>
@@ -106,7 +145,7 @@ const Tasks: React.FC = () => {
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Tasks;
+export default Tasks

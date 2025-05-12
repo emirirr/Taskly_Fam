@@ -1,12 +1,13 @@
+// src/pages/Dashboard.tsx
 import React, { useEffect, useState } from 'react';
 import { auth, db } from '../core/firebase';
 import {
   doc,
-  onSnapshot,
+  getDoc,
   collection,
   query,
   where,
-  getDocs
+  getCountFromServer
 } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import styles from './Dashboard.module.css';
@@ -17,49 +18,43 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = auth.currentUser;
-    if (!user) {
-      navigate('/');
-      return;
-    }
+    const fetchCounts = async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        navigate('/');
+        return;
+      }
+      const userSnap = await getDoc(doc(db, 'users', user.uid));
+      const familyId = userSnap.data()?.familyId;
+      if (!familyId) {
+        navigate('/');
+        return;
+      }
 
-    // Kullanıcının aileId'sini al
-    const userRef = doc(db, 'users', user.uid);
-    const unsubUser = onSnapshot(userRef, async (snap) => {
-      const data = snap.data();
-      if (!data) return;
-      const familyId = data.familyId;
+      // Görev sayısını çek
+      const tasksQ = query(collection(db, 'tasks'), where('familyId', '==', familyId));
+      const tasksSnapshot = await getCountFromServer(tasksQ);
+      setTasksCount(tasksSnapshot.data().count);
 
-      // Görevleri say
-      const tasksQ = query(
-        collection(db, 'tasks'),
-        where('familyId', '==', familyId)
-      );
-      const tasksSnap = await getDocs(tasksQ);
-      setTasksCount(tasksSnap.size);
+      // Alışveriş öğesi sayısını çek
+      const shoppingQ = query(collection(db, 'shoppingItems'), where('familyId', '==', familyId));
+      const shoppingSnapshot = await getCountFromServer(shoppingQ);
+      setShoppingCount(shoppingSnapshot.data().count);
+    };
 
-      // Alışveriş öğelerini say
-      const shopQ = query(
-        collection(db, 'shoppingItems'),
-        where('familyId', '==', familyId)
-      );
-      const shopSnap = await getDocs(shopQ);
-      setShoppingCount(shopSnap.size);
-    });
-
-    return () => unsubUser();
+    fetchCounts();
   }, [navigate]);
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.header}>👋 Merhaba, Hoş Geldin!</h1>
+      <h1 className={styles.header}>👋 Hoş Geldin!</h1>
       <div className={styles.cards}>
         <div className={styles.card}>
           <div className={styles.cardTitle}>Toplam Görev</div>
           <div className={styles.cardValue}>{tasksCount}</div>
         </div>
         <div className={styles.card}>
-          <div className={styles.cardTitle}>Alışveriş Listesi</div>
+          <div className={styles.cardTitle}>Alışveriş Kalemi</div>
           <div className={styles.cardValue}>{shoppingCount}</div>
         </div>
       </div>

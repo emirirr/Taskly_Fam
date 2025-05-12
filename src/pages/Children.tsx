@@ -1,105 +1,155 @@
-// src/pages/Children.tsx
 import React, { useState, useEffect } from 'react'
 import { auth, db } from '../core/firebase'
-import { addDoc, collection, doc, onSnapshot, updateDoc } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  getDoc,
+  DocumentData
+} from 'firebase/firestore'
+import styles from './Children.module.css'
 
-interface Child {
+interface Member {
   uid: string
   displayName: string
-  gender?: string
+  role: 'parent' | 'child'
+  gender?: 'male' | 'female'
 }
 
 const Children: React.FC = () => {
-  const [childName, setChildName] = useState('')
+  const [name, setName] = useState('')
   const [gender, setGender] = useState<'male' | 'female'>('male')
-  const [children, setChildren] = useState<Child[]>([])
+  const [members, setMembers] = useState<Member[]>([])
 
   useEffect(() => {
     const user = auth.currentUser
     if (!user) return
 
-    // Aile bilgisini çek
-    const unsubUser = onSnapshot(doc(db, 'users', user.uid), snap => {
-      const data = snap.data()
-      if (!data) return
+    const userRef = doc(db, 'users', user.uid)
+    const unsubUser = onSnapshot(userRef, async userSnap => {
+      const userData = userSnap.data() as DocumentData
+      if (!userData) return
+      const familyId = userData.familyId as string
 
-      const familyId = data.familyId
-      // Bu ailenin tüm üyelerini dinle
-      const familyUnsub = onSnapshot(doc(db, 'families', familyId), famSnap => {
-        const fam = famSnap.data()
-        if (!fam) return
-        const memberIds: string[] = fam.members
+      const famRef = doc(db, 'families', familyId)
+      const unsubFam = onSnapshot(famRef, async famSnap => {
+        const famData = famSnap.data() as DocumentData
+        if (!famData) return
+        const uids: string[] = famData.members
 
-        // Çocuk uid'lerini filtrele ve bilgilerini getir
-        Promise.all(memberIds.map(async uid => {
-          const userSnap = await doc(db, 'users', uid).get()
-          const usr = (await userSnap).data()
-          return { uid, displayName: usr?.displayName, gender: usr?.gender }
-        })).then(list => setChildren(list as Child[]))
+        const loaded: Member[] = await Promise.all(
+          uids.map(async uid => {
+            const uSnap = await getDoc(doc(db, 'users', uid))
+            const uData = uSnap.data() as any
+            return {
+              uid,
+              displayName: uData.displayName,
+              role: uData.role,
+              gender: uData.gender
+            }
+          })
+        )
+        setMembers(loaded)
       })
 
-      return () => familyUnsub()
+      return () => unsubFam()
     })
 
     return () => unsubUser()
   }, [])
 
-  const handleAddChild = async () => {
-    const user = auth.currentUser!
-    const userSnap = await (await doc(db, 'users', user.uid).get()).data()
-    const familyId = userSnap.familyId
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('handleAddChild çalıştı — name:', name, 'gender:', gender)
 
-    // 1. Yeni çocuk kullanıcısı oluştur
-    const childCred = await addDoc(collection(db, 'users'), {
-      displayName: childName,
+    const trimmed = name.trim()
+    if (!trimmed) {
+      alert('Lütfen bir isim girin.')
+      return
+    }
+    const user = auth.currentUser!
+    console.log('currentUser.uid:', user.uid)
+    const userSnap = await getDoc(doc(db, 'users', user.uid))
+    const familyId = (userSnap.data() as any).familyId as string
+    console.log('familyId:', familyId)
+
+    // Yeni çocuk ekle
+    const newUserRef = await addDoc(collection(db, 'users'), {
+      displayName: trimmed,
       role: 'child',
       gender,
       familyId
     })
+    console.log('Yeni child eklendi, uid:', newUserRef.id)
 
-    // 2. Family.members dizisine çocuğun uid’sini ekle
-    await updateDoc(doc(db, 'families', familyId), {
-      members: [...userSnap.members, childCred.id]
+    // Aile üyeleri güncelle
+    const famRef = doc(db, 'families', familyId)
+    const currentMembers = (userSnap.data() as any).members as string[]
+    await updateDoc(famRef, {
+      members: [...currentMembers, newUserRef.id]
     })
+    console.log('Family.members güncellendi.')
 
-    setChildName('')
+    setName('')
+  }
+
+  const handleRemove = async (uid: string) => {
+    const user = auth.currentUser!
+    const userSnap = await getDoc(doc(db, 'users', user.uid))
+    const familyId = (userSnap.data() as any).familyId as string
+    const famRef = doc(db, 'families', familyId)
+    const current = (userSnap.data() as any).members as string[]
+    await updateDoc(famRef, {
+      members: current.filter(id => id !== uid)
+    })
   }
 
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Aile Üyelerini Yönet</h1>
-
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Çocuk adı"
-          value={childName}
-          onChange={e => setChildName(e.target.value)}
-          className="mb-2 p-2 border rounded w-full"
-        />
-        <select
-          value={gender}
-          onChange={e => setGender(e.target.value as any)}
-          className="mb-2 p-2 border rounded w-full"
-        >
-          <option value="male">Erkek</option>
-          <option value="female">Kız</option>
-        </select>
-        <button
-          onClick={handleAddChild}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Çocuk Ekle
+    <div className={styles.container}>
+      <h1 className={styles.header}>🧑‍🤝‍🧑 Aile Üyeleri</h1>
+      <form onSubmit={handleAdd} className={styles.form}>
+        <div className={styles.inputField}>
+          <input
+            type="text"
+            placeholder="Çocuk adı"
+            value={name}
+            onChange={e => setName(e.target.value)}
+          />
+        </div>
+        <div className={styles.selectField}>
+          <select value={gender} onChange={e => setGender(e.target.value as any)}>
+            <option value="male">Erkek</option>
+            <option value="female">Kız</option>
+          </select>
+        </div>
+        <button type="submit" className={styles.button}>
+          Ekle
         </button>
-      </div>
+      </form>
 
-      <ul>
-        {children.map(c => (
-          <li key={c.uid} className="mb-2">
-            {c.displayName} ({c.gender})
-          </li>
+      <div className={styles.list}>
+        {members.map(m => (
+          <div key={m.uid} className={styles.card}>
+            <div className={styles.cardInfo}>
+              <div className={styles.cardName}>{m.displayName}</div>
+              <div className={styles.cardRole}>
+                {m.role === 'parent'
+                  ? 'Ebeveyn'
+                  : m.gender === 'male'
+                  ? 'Oğul'
+                  : 'Kız'}
+              </div>
+            </div>
+            {m.role === 'child' && (
+              <div className={styles.cardActions}>
+                <button onClick={() => handleRemove(m.uid)}>🗑️</button>
+              </div>
+            )}
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   )
 }

@@ -1,9 +1,10 @@
 // src/core/firebase.ts
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getAnalytics } from "firebase/analytics";
 
-// Firebase proje ayarların (seninkiyle değiştir)
+// Firebase proje ayarların
 const firebaseConfig = {
   apiKey: "AIzaSyDtSIWeOQ_fu_NsyXEdjKSj5VSPukxdaww",
   authDomain: "fishero-91035.firebaseapp.com",
@@ -17,7 +18,10 @@ const firebaseConfig = {
 // Uygulamayı başlat
 const app = initializeApp(firebaseConfig);
 
-// Auth ve Firestore objelerini dışa aktar
+// Auth ve Persistence ayarı
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+setPersistence(auth, browserLocalPersistence);
 
+// Firestore ve Analytics objelerini dışa aktar
+export const db = getFirestore(app);
+export const analytics = getAnalytics(app);

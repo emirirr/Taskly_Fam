@@ -1,58 +1,58 @@
+/* src/pages/Login.module.css */
 .container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #f0f4ff, #e0e7ff);
-  }
-  
-  .form {
-    width: 100%;
-    max-width: 400px;
-    padding: 2rem;
-    background-color: #ffffff;
-    border-radius: 1.5rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  }
-  
-  .title {
-    font-size: 1.75rem;
-    color: #3b82f6;
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-  
-  .inputField {
-    margin-bottom: 1rem;
-  }
-  
-  .inputField input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid #c7d2fe;
-    border-radius: 0.75rem;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.2s ease-in-out;
-  }
-  
-  .inputField input:focus {
-    border-color: #6366f1;
-  }
-  
-  .button {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    background-color: #6366f1;
-    color: #ffffff;
-    font-size: 1.125rem;
-    border: none;
-    border-radius: 0.75rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-  }
-  
-  .button:hover {
-    background-color: #4f46e5;
-  }
-  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f0f4ff, #e0e7ff);
+}
+
+.form {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 1.75rem;
+  color: #3b82f6;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.inputField {
+  margin-bottom: 1rem;
+}
+
+.inputField input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #c7d2fe;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.inputField input:focus {
+  border-color: #6366f1;
+}
+
+.button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: #6366f1;
+  color: #ffffff;
+  font-size: 1.125rem;
+  border: none;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.button:hover {
+  background-color: #4f46e5;
+}

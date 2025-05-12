@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../core/firebase';
-import styles from './Login.module.css';  // ← CSS modülünü import et
+import styles from './Login.module.css';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
