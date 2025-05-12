@@ -60,5 +60,5 @@ Firebase Authentication ile güvenli giriş/çıkış, Firestore ile gerçek zam
 
 1. Repoyu klonlayın:
    ```bash
-   git clone https://github.com/<kullanıcı_adı>/taskly-family.git
+   git clone https://github.com/<emirirr>/taskly-family.git
    cd taskly-family
