@@ -1,12 +1,63 @@
-# React + Vite
+# Taskly Family
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![Firebase](https://img.shields.io/badge/Firebase-Firestore%20%7C%20Auth-orange.svg)](https://firebase.google.com/) [![React](https://img.shields.io/badge/React-v18-blue.svg)](https://reactjs.org/) [![Vite](https://img.shields.io/badge/Vite-3.0-brightgreen.svg)](https://vitejs.dev/)
 
-Currently, two official plugins are available:
+> Aile içi ortak görev ve alışveriş listesini gerçek zamanlı olarak yönetmeyi sağlayan React + Firebase uygulaması.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 📖 İçindekiler
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- [🔍 Özellikler](#-özellikler)  
+- [🛠️ Teknoloji Yığını](#️-teknoloji-yığını)  
+- [🚀 Kurulum & Çalıştırma](#-kurulum--çalıştırma)  
+- [⚙️ Yapılandırma](#️-yapılandırma)  
+- [📂 Klasör Yapısı](#-klasör-yapısı)  
+- [🤝 Katkıda Bulunma](#-katkıda-bulunma)  
+- [📄 Lisans](#-lisans)  
+
+---
+
+## 🔍 Özellikler
+
+- **Kayıt & Giriş**  
+  - Email/Şifre doğrulamalı kullanıcı yönetimi (Firebase Auth)  
+- **Dashboard**  
+  - Toplam görev ve alışveriş maddesi sayısını özet widget’larıyla gösterim  
+- **Görev Yönetimi**  
+  - Aile üyelerine görev oluşturma, atama, listeleme, silme  
+- **Alışveriş Listesi**  
+  - Çocuklar alışveriş maddesi ekleyebilir; ebeveynler yönetebilir  
+- **Aile Üyeleri**  
+  - Çocuk profili ekleme, silme; rol ve cinsiyet atama  
+- **Profil & Çıkış**  
+  - Kullanıcı adı güncelleme ve oturumu sonlandırma  
+- **Korunan Rotalar**  
+  - Giriş yapılmamış kullanıcıları otomatik login sayfasına yönlendirme  
+- **Gerçek Zamanlı Senkronizasyon**  
+  - Firestore onSnapshot ile anlık güncellemeler  
+
+---
+
+## 🛠️ Teknoloji Yığını
+
+- **Frontend**  
+  - React 18 + Vite  
+  - TypeScript  
+  - CSS Modules & Tailwind CSS  
+  - React Router DOM  
+- **Backend / BaaS**  
+  - Firebase Authentication  
+  - Cloud Firestore  
+- **Araçlar**  
+  - PostCSS + Autoprefixer  
+  - ESlint + Prettier (isteğe bağlı)  
+
+---
+
+## 🚀 Kurulum & Çalıştırma
+
+1. **Depoyu klonlayın**  
+   ```bash
+   git clone https://github.com/your-username/taskly-family.git
+   cd taskly-family
