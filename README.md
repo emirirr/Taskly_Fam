@@ -59,5 +59,5 @@
 
 1. **Depoyu klonlayın**  
    ```bash
-   git clone https://github.com/your-username/taskly-family.git
+   git clone https://github.com/emirirr/taskly-family.git
    cd taskly-family
